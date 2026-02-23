@@ -2,7 +2,7 @@ FROM python:3.13-bookworm
 
 WORKDIR /home/airflow
 
-# Install Java
+# Install Java (Updated with architecture-agnostic symlink for Apple Silicon/ARM64 support)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
@@ -10,12 +10,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     make \
     procps \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && ln -s /usr/lib/jvm/java-17-openjdk-* /usr/lib/jvm/java-17-generic
 
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV JAVA_HOME=/usr/lib/jvm/java-17-generic
 ENV PATH=$JAVA_HOME/bin:$PATH
 
-# Install Spark 
+# Install Spark
 ENV SPARK_VERSION=4.0.1
 ENV SPARK_HOME=/opt/spark
 RUN wget -q https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz && \
@@ -46,7 +47,9 @@ ENV AIRFLOW_VERSION=3.1.3
 ENV PYTHON_VERSION=3.13
 ENV CONSTRAINT_URL="https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-no-providers-${PYTHON_VERSION}.txt"
 
+# Create virtual environment and explicitly add it to the global PATH
 RUN uv venv /home/airflow/.venv
+ENV PATH="/home/airflow/.venv/bin:$PATH"
 RUN uv pip install "apache-airflow==${AIRFLOW_VERSION}" --constraint "${CONSTRAINT_URL}"
 RUN uv pip install pyspark==4.0.1 'pyspark[sql]==4.0.1'
 RUN uv pip install ruff
@@ -58,7 +61,7 @@ RUN uv pip install plotly
 # Copy IPython startup scripts
 COPY ./ipython_scripts/startup/ /root/.ipython/profile_default/startup/
 
-# mkdir warehouse and spark-events folder 
+# mkdir warehouse and spark-events folder
 RUN mkdir -p /home/airflow/warehouse
 RUN mkdir -p /home/airflow/spark-events
 
