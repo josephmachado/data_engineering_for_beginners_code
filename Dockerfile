@@ -48,6 +48,7 @@ ENV CONSTRAINT_URL="https://raw.githubusercontent.com/apache/airflow/constraints
 
 RUN uv venv /home/airflow/.venv
 RUN uv pip install "apache-airflow==${AIRFLOW_VERSION}" --constraint "${CONSTRAINT_URL}"
+RUN uv pip install apache-airflow-providers-standard
 RUN uv pip install pyspark==4.0.1 'pyspark[sql]==4.0.1'
 RUN uv pip install ruff
 RUN uv pip install jupyterlab
