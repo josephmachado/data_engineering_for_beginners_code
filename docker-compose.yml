@@ -14,8 +14,8 @@ services:
       - "8081:8081"   # dbt docs
       - "4778:4778"   # IGNORE, this is for de101.startdataengineering.com
     volumes:
-      - ./airflow/dags:/home/airflow/dags
-      - ./airflow/tpch_analytics:/home/airflow/tpch_analytics
-      - ./notebooks:/home/airflow/notebooks
-      - ./README.md:/home/airflow/README.md
-      - ./book:/home/airflow/book # This is for the de101.startdataengineering.com website pls ignore
+      - ./airflow/dags:/home/airflow/dags:Z
+      - ./airflow/tpch_analytics:/home/airflow/tpch_analytics:Z
+      - ./notebooks:/home/airflow/notebooks:Z
+      - ./README.md:/home/airflow/README.md:Z
+      - ./book:/home/airflow/book:Z # This is for the de101.startdataengineering.com website pls ignore
