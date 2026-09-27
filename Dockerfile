@@ -12,8 +12,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
     && rm -rf /var/lib/apt/lists/*
 
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-ENV PATH=$JAVA_HOME/bin:$PATH
+# Architecture-independent JAVA_HOME
+RUN JAVA_REAL_HOME="$(dirname "$(dirname "$(readlink -f "$(which java)")")")" \
+    && ln -s "$JAVA_REAL_HOME" /opt/java
+
+ENV JAVA_HOME=/opt/java
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # Install Spark 
 ENV SPARK_VERSION=4.0.1
@@ -48,10 +52,10 @@ ENV CONSTRAINT_URL="https://raw.githubusercontent.com/apache/airflow/constraints
 
 RUN uv venv /home/airflow/.venv
 RUN uv pip install "apache-airflow==${AIRFLOW_VERSION}" --constraint "${CONSTRAINT_URL}"
-RUN uv pip install pyspark==4.0.1 'pyspark[sql]==4.0.1'
+RUN uv pip install "pyspark[sql]==4.0.1" "pandas<3"
 RUN uv pip install ruff
 RUN uv pip install jupyterlab
-RUN uv pip install dbt dbt-core dbt-spark[session]
+RUN uv pip install "dbt-spark[session]==1.11.0"
 RUN uv pip install duckdb
 RUN uv pip install plotly
 
